@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Strauss PM"/>
+<meta name="theme-color" content="#C8102E"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icon.png"/>
+<title>Strauss PM</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --red:#C8102E;--red-dark:#9B0B22;--red-light:#F5C6CE;
+  --navy:#0D1B2A;--mid:#1A2E45;--light:#253A52;
+  --gold:#E8B84B;--white:#FAFAF8;--gray:#8A9BB0;--gray-l:#D1D8E2;
+  --green:#2ECC71;--warn:#F39C12;--danger:#E74C3C;--blue:#3498DB;
+  --purple:#9B59B6;--orange:#E67E22;--teal:#1ABC9C;
+}
+body{background:var(--navy);font-family:'Heebo','Segoe UI',Arial,sans-serif;color:var(--white);min-height:100vh;direction:rtl}
+input,select,textarea,button{font-family:inherit;font-size:14px}
+button{cursor:pointer;border:none;border-radius:8px;font-weight:700;transition:opacity .15s}
+button:active{opacity:.8}
+.page{display:none;padding:18px 14px calc(60px + env(safe-area-inset-bottom));max-width:900px;margin:0 auto}
+.page.active{display:block}
+/* NAV */
+#nav{background:var(--mid);border-bottom:3px solid var(--red);padding:env(safe-area-inset-top) 14px 0;position:sticky;top:0;z-index:50}
+.nav-inner{max-width:900px;margin:0 auto;display:flex;align-items:center;height:52px;gap:8px;padding-top:0}
+.nav-logo{background:var(--red);border-radius:8px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;flex-shrink:0}
+.nav-title{font-weight:900;font-size:14px;white-space:nowrap;flex-shrink:0}
+.nav-tabs{display:flex;gap:2px;flex:1;justify-content:center}
+.nav-tab{background:transparent;color:var(--gray);padding:6px 12px;border-radius:8px;font-size:12px;white-space:nowrap;position:relative}
+.nav-tab.active{background:var(--red);color:var(--white)}
+.badge-dot{position:absolute;top:2px;right:2px;background:var(--danger);color:#fff;font-size:8px;border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center}
+#user-sel{background:var(--light);border:none;border-radius:8px;padding:5px 8px;color:var(--gray);font-size:11px;direction:rtl;max-width:110px;flex-shrink:0}
+/* CARDS */
+.card{background:var(--mid);border-radius:12px;padding:16px 18px;border:1px solid var(--light);margin-bottom:10px}
+.card-sm{background:var(--navy);border-radius:8px;padding:10px 14px;border:1px solid var(--light);margin-bottom:6px}
+/* BUTTONS */
+.btn{padding:9px 18px;border-radius:8px;font-size:13px;min-height:38px}
+.btn-red{background:var(--red);color:#fff}
+.btn-ghost{background:transparent;color:var(--gray);border:1px solid var(--light)}
+.btn-gold{background:var(--gold);color:var(--navy)}
+.btn-blue{background:transparent;color:var(--blue);border:1px solid var(--blue)}
+.btn-green{background:transparent;color:var(--green);border:1px solid var(--green)}
+.btn-danger{background:transparent;color:var(--danger);border:1px solid var(--danger)}
+.btn-sm{padding:5px 12px;font-size:12px;min-height:30px}
+.btn-wa{background:#25D366;color:#fff;border:none}
+/* BADGES */
+.badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+/* FORM */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;color:var(--gray);margin-bottom:5px;font-weight:700}
+.field input,.field select,.field textarea{width:100%;background:var(--navy);border:1px solid var(--light);border-radius:8px;padding:10px 12px;color:var(--white);font-size:14px;outline:none;direction:rtl}
+.field textarea{min-height:80px;resize:vertical}
+.row2{display:flex;gap:10px}.row2>.field{flex:1}
+/* MODAL */
+#modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:200;align-items:flex-end;justify-content:center}
+#modal-overlay.open{display:flex}
+#modal-box{background:var(--mid);border-radius:20px 20px 0 0;width:100%;max-width:600px;max-height:92vh;overflow-y:auto;padding:20px 20px calc(20px + env(safe-area-inset-bottom))}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.modal-header h3{font-size:17px;color:var(--white)}
+.modal-close{background:none;border:none;color:var(--gray);font-size:26px;line-height:1;padding:0 4px}
+/* PROGRESS */
+.pbar{background:var(--navy);border-radius:6px;overflow:hidden}
+.pbar-fill{height:100%;border-radius:6px;transition:width .4s}
+/* GANTT */
+.gantt-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.gantt-row{display:flex;align-items:center;margin-top:3px}
+.gantt-label{width:160px;flex-shrink:0;padding:4px 8px;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gantt-track{flex:1;height:24px;position:relative;background:var(--navy);border-radius:4px}
+.gantt-bar{position:absolute;top:3px;height:18px;border-radius:4px;overflow:hidden}
+.gantt-progress{height:100%;background:rgba(0,0,0,.25)}
+.gantt-today{position:absolute;top:0;bottom:0;width:2px;background:var(--red);z-index:3}
+/* TIMELINE */
+.timeline{position:relative;padding-right:16px}
+.timeline::before{content:'';position:absolute;right:5px;top:0;bottom:0;width:2px;background:var(--light)}
+.tl-item{display:flex;gap:10px;margin-bottom:10px;position:relative}
+.tl-dot{position:absolute;right:-4px;top:8px;width:10px;height:10px;border-radius:50%;border:2px solid var(--mid);z-index:1}
+/* STAT CARDS */
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.stat-card{flex:1;min-width:90px;background:var(--mid);border-radius:10px;padding:12px 8px;text-align:center;border:1px solid var(--light)}
+.stat-val{font-size:20px;font-weight:900;margin-bottom:3px}
+.stat-label{font-size:11px;color:var(--gray)}
+/* ALERT */
+.alert{border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:13px}
+.alert-danger{background:rgba(231,76,60,.1);border:1px solid var(--danger);color:var(--danger)}
+/* TABS */
+.proj-tabs{display:flex;gap:3px;margin-bottom:18px;overflow-x:auto;padding-bottom:4px}
+.proj-tab{padding:8px 14px;border-radius:10px;border:none;font-size:12px;font-weight:700;background:var(--mid);color:var(--gray);white-space:nowrap;flex-shrink:0}
+.proj-tab.active{background:var(--red);color:#fff}
+/* UTILS */
+.flex{display:flex}.gap8{gap:8px}.gap6{gap:6px}.wrap{flex-wrap:wrap}
+.col{flex-direction:column}
+.sb{justify-content:space-between}.ac{align-items:center}.af{align-items:flex-start}
+.mt4{margin-top:4px}.mt8{margin-top:8px}.mt12{margin-top:12px}
+.mb4{margin-bottom:4px}.mb8{margin-bottom:8px}.mb12{margin-bottom:12px}
+.f11{font-size:11px}.f12{font-size:12px}.f13{font-size:13px}.f15{font-size:15px}.f18{font-size:18px}
+.fw7{font-weight:700}.fw9{font-weight:900}
+.c-white{color:var(--white)}.c-gray{color:var(--gray)}.c-gold{color:var(--gold)}.c-red{color:var(--red)}.c-green{color:var(--green)}.c-danger{color:var(--danger)}.c-warn{color:var(--warn)}.c-blue{color:var(--blue)}
+.sep{border-top:1px solid var(--light);margin:12px 0;padding-top:12px}
+.avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0}
+input[type=range]{-webkit-appearance:none;width:100%;height:4px;border-radius:2px;background:var(--light);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--red);cursor:pointer}
+.save-indicator{position:fixed;bottom:8px;left:12px;font-size:10px;color:var(--light);pointer-events:none}
+/* RESPONSIVE DESKTOP */
+@media(min-width:768px){
+  body{font-size:15px}
+  .page{padding:24px 32px 60px}
+  #nav{padding:0 32px}
+  .nav-inner{height:60px}
+  .nav-tab{font-size:13px;padding:8px 16px}
+  .card{padding:20px 24px}
+  .stats{gap:12px}
+  .stat-card{padding:16px 12px}
+  .stat-val{font-size:26px}
+  .modal-body-inner{max-width:560px;margin:0 auto}
+  #modal-overlay{align-items:center}
+  #modal-box{border-radius:16px;max-width:580px;max-height:85vh}
+  .proj-tabs{gap:6px}
+  .proj-tab{padding:9px 18px;font-size:13px}
+  .desktop-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .desktop-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+}
+@media(min-width:1024px){
+  .page{padding:28px 40px 60px;max-width:1100px}
+  #nav{padding:0 40px}
+  .nav-inner{max-width:1100px}
+}
+/* AI TAB */
+.ai-section{background:var(--navy);border-radius:12px;padding:16px;margin-bottom:14px;border:1px solid var(--light)}
+.ai-result{background:var(--mid);border-radius:10px;padding:14px;margin-top:12px;border:1px solid var(--light)}
+.ai-task-item{background:var(--navy);border-radius:8px;padding:10px 12px;margin-bottom:8px;border:1px solid var(--light);display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.ai-chip{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;margin:2px}
+.spinner{display:inline-block;width:18px;height:18px;border:2px solid var(--light);border-top-color:var(--red);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-left:8px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.api-key-box{background:var(--navy);border:1px solid var(--gold);border-radius:10px;padding:14px;margin-bottom:16px}
+.file-drop{border:2px dashed var(--light);border-radius:10px;padding:30px;text-align:center;cursor:pointer;transition:border-color .2s}
+.file-drop:hover,.file-drop.drag{border-color:var(--red)}
+.file-drop input{display:none}
+.tab-bar-bottom{display:none}
+@media(max-width:480px){
+  .hide-sm{display:none!important}
+  .row2{flex-direction:column}
+  .tab-bar-bottom{display:flex;position:fixed;bottom:0;left:0;right:0;background:var(--mid);border-top:1px solid var(--light);padding:8px 4px calc(8px + env(safe-area-inset-bottom));z-index:60;justify-content:space-around}
+  .tab-bar-bottom button{background:none;border:none;color:var(--gray);font-size:10px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 8px;border-radius:8px;min-width:48px}
+  .tab-bar-bottom button.active{color:var(--red)}
+  .tab-bar-bottom button span.icon{font-size:20px}
+  .page{padding-bottom:90px}
+  #nav .nav-tabs{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<div id="nav">
+  <div class="nav-inner">
+    <div class="nav-logo">S</div>
+    <span class="nav-title">Strauss PM</span>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="showPage('dashboard',this)">📊 <span class="hide-sm">דשבורד</span></button>
+      <button class="nav-tab" onclick="showPage('projects',this)">📁 <span class="hide-sm">פרויקטים</span></button>
+      <button class="nav-tab" id="mine-tab" onclick="showPage('mine',this)">👤 <span class="hide-sm">שלי</span></button>
+    </div>
+    <select id="user-sel" onchange="setCurrentUser(this.value)">
+      <option value="">👤 משתמש</option>
+    </select>
+  </div>
+</div>
+
+<!-- PAGES -->
+<div id="page-dashboard" class="page active"></div>
+<div id="page-projects" class="page"></div>
+<div id="page-mine" class="page"></div>
+<div id="page-project" class="page"></div>
+
+<!-- MODAL -->
+<div id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div id="modal-box">
+    <div class="modal-header">
+      <h3 id="modal-title"></h3>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<div class="save-indicator">💾 שמור אוטומטי</div>
+
+<!-- MOBILE BOTTOM TAB BAR -->
+<div class="tab-bar-bottom" id="bottom-nav">
+  <button id="bn-dashboard" class="active" onclick="showPage('dashboard',null);updateBottomNav('dashboard')">
+    <span class="icon">📊</span><span>דשבורד</span>
+  </button>
+  <button id="bn-projects" onclick="showPage('projects',null);updateBottomNav('projects')">
+    <span class="icon">📁</span><span>פרויקטים</span>
+  </button>
+  <button id="bn-mine" onclick="showPage('mine',null);updateBottomNav('mine')" style="position:relative">
+    <span class="icon">👤</span><span>שלי</span>
+    <span id="bn-badge" style="display:none;position:absolute;top:2px;right:6px;background:var(--danger);color:#fff;font-size:8px;border-radius:50%;width:14px;height:14px;align-items:center;justify-content:center;font-weight:700"></span>
+  </button>
+</div>
+
+<script>
+/* ═══════════════════════════ STATE ═══════════════════════════ */
+const SK = "strauss_pm_v5";
+let state = { projects:[], currentUser:"", openProjectId:null };
+
+const uid = () => Math.random().toString(36).slice(2,9);
+const today = () => new Date().toISOString().split("T")[0];
+const fmt = d => d ? new Date(d).toLocaleDateString("he-IL") : "—";
+const diffDays = (a,b) => Math.round((new Date(b)-new Date(a))/86400000);
+const isOverdue = (end,status) => status!=="done" && diffDays(today(),end)<0;
+const esc = s => String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+
+function saveState(){ try{localStorage.setItem(SK,JSON.stringify(state.projects));}catch{} }
+function loadState(){
+  try{
+    const d=localStorage.getItem(SK);
+    if(d) state.projects=JSON.parse(d);
+    else state.projects=JSON.parse(JSON.stringify(SEED));
+  }catch{ state.projects=JSON.parse(JSON.stringify(SEED)); }
+}
+
+/* ═══════════════════════════ SEED ═══════════════════════════ */
+const SEED=[{
+  id:"p1",name:"השקת מוצר חדש – חטיפים בריאים",status:"active",priority:"high",
+  owner:"ניר כהן",startDate:"2026-03-01",endDate:"2026-06-30",
+  budget:850000,spent:312000,
+  description:"פיתוח וייצור קו חדש של חטיפים בריאים לשוק הישראלי",
+  tags:["מוצר","שיווק","ייצור"],
+  team:[
+    {id:"u1",name:"ניר כהן",role:"מנהל פרויקט",email:"nir@strauss.co.il",phone:"0501234567"},
+    {id:"u2",name:"דנה לוי",role:"חוקרת שוק",email:"dana@strauss.co.il",phone:"0502345678"},
+    {id:"u3",name:"עמי גולן",role:"מפתח מוצר",email:"ami@strauss.co.il",phone:"0503456789"},
+    {id:"u4",name:"מיה שרון",role:"מעצבת",email:"mia@strauss.co.il",phone:"0504567890"},
+  ],
+  milestones:[
+    {id:"ms1",name:"אישור מחקר שוק",date:"2026-03-21",status:"done",description:""},
+    {id:"ms2",name:"מתכון סופי מאושר",date:"2026-04-20",status:"active",description:""},
+    {id:"ms3",name:"אישור אריזה",date:"2026-05-01",status:"todo",description:""},
+    {id:"ms4",name:"השקה מסחרית",date:"2026-06-30",status:"todo",description:""},
+  ],
+  workplans:[
+    {id:"wp1",name:"מחקר ופיתוח",color:"#3498DB",tasks:[
+      {id:"t1",name:"מחקר שוק",assigneeId:"u2",start:"2026-03-01",end:"2026-03-21",progress:100,status:"done",priority:"high",notes:"",deps:[]},
+      {id:"t2",name:"פיתוח מתכון",assigneeId:"u3",start:"2026-03-22",end:"2026-04-18",progress:80,status:"active",priority:"high",notes:"",deps:["t1"]},
+    ]},
+    {id:"wp2",name:"עיצוב ומיתוג",color:"#9B59B6",tasks:[
+      {id:"t3",name:"עיצוב אריזה",assigneeId:"u4",start:"2026-04-05",end:"2026-04-30",progress:40,status:"active",priority:"medium",notes:"",deps:[]},
+      {id:"t4",name:"מדריך מותג",assigneeId:"u4",start:"2026-04-10",end:"2026-04-25",progress:20,status:"active",priority:"low",notes:"",deps:[]},
+    ]},
+    {id:"wp3",name:"השקה מסחרית",color:"#E67E22",tasks:[
+      {id:"t5",name:"הרצת טייס",assigneeId:"u1",start:"2026-05-01",end:"2026-05-31",progress:0,status:"todo",priority:"medium",notes:"",deps:["t2","t3"]},
+      {id:"t6",name:"השקה מסחרית",assigneeId:"u1",start:"2026-06-01",end:"2026-06-30",progress:0,status:"todo",priority:"high",notes:"",deps:["t5"]},
+    ]},
+  ],
+  meetings:[
+    {id:"m1",title:"קיק-אוף מחקר שוק",date:"2026-03-01",participants:["ניר כהן","דנה לוי"],summary:"הוגדרו מטרות מחקר השוק.",decisions:["תקציב: ₪45,000","מועד: 21/3"],actions:[{text:"גיוס חברת מחקר",owner:"דנה לוי",due:"2026-03-05"}]},
+  ],
+},{
+  id:"p2",name:"שדרוג מערכת ERP",status:"active",priority:"high",
+  owner:"רחל פרידמן",startDate:"2026-01-15",endDate:"2026-09-30",
+  budget:2200000,spent:780000,
+  description:"מעבר ממערכת SAP קיימת לגרסה S/4HANA",
+  tags:["IT","תשתיות"],
+  team:[
+    {id:"u5",name:"רחל פרידמן",role:"מנהלת פרויקט",email:"rachel@strauss.co.il",phone:"0505678901"},
+    {id:"u6",name:"יוסי בן-דוד",role:"ארכיטקט פתרונות",email:"yossi@strauss.co.il",phone:"0506789012"},
+  ],
+  milestones:[
+    {id:"ms5",name:"הגשת RFP",date:"2026-03-01",status:"done",description:""},
+    {id:"ms6",name:"חתימת חוזה SAP",date:"2026-04-01",status:"done",description:""},
+    {id:"ms7",name:"Go-Live",date:"2026-09-30",status:"todo",description:""},
+  ],
+  workplans:[
+    {id:"wp4",name:"ניתוח ותכנון",color:"#27AE60",tasks:[
+      {id:"t7",name:"מיפוי תהליכים",assigneeId:"u5",start:"2026-01-15",end:"2026-02-28",progress:100,status:"done",priority:"high",notes:"",deps:[]},
+      {id:"t8",name:"הגדרת Requirements",assigneeId:"u6",start:"2026-03-01",end:"2026-03-31",progress:100,status:"done",priority:"high",notes:"",deps:["t7"]},
+    ]},
+    {id:"wp5",name:"פיתוח והטמעה",color:"#C8102E",tasks:[
+      {id:"t9",name:"פיתוח ואינטגרציה",assigneeId:"u6",start:"2026-04-01",end:"2026-07-31",progress:30,status:"active",priority:"high",notes:"",deps:["t8"]},
+      {id:"t10",name:"UAT",assigneeId:"u5",start:"2026-08-01",end:"2026-08-31",progress:0,status:"todo",priority:"medium",notes:"",deps:["t9"]},
+      {id:"t11",name:"Go-Live",assigneeId:"u5",start:"2026-09-01",end:"2026-09-30",progress:0,status:"todo",priority:"high",notes:"",deps:["t10"]},
+    ]},
+  ],
+  meetings:[
+    {id:"m3",title:"סטירינג קומיטי Q1",date:"2026-02-15",participants:["רחל פרידמן","CIO"],summary:"סקירת תוצאות מיפוי תהליכים.",decisions:["פרסום RFP עד 1/3"],actions:[{text:"הכנת RFP",owner:"יוסי בן-דוד",due:"2026-03-01"}]},
+  ],
+}];
+
+/* ═══════════════════════════ HELPERS ═══════════════════════════ */
+const SBADGE = {
+  active:`<span class="badge" style="background:#1B4A2E;color:#2ECC71">פעיל</span>`,
+  planning:`<span class="badge" style="background:#2A2010;color:#E8B84B">תכנון</span>`,
+  done:`<span class="badge" style="background:#1A3060;color:#6EA8FE">הושלם</span>`,
+  paused:`<span class="badge" style="background:#3A1A1A;color:#E74C3C">מושהה</span>`,
+};
+const PBADGE = {
+  high:`<span class="badge" style="background:#9B0B22;color:#F5C6CE">גבוהה</span>`,
+  medium:`<span class="badge" style="background:#2A2010;color:#E8B84B">בינונית</span>`,
+  low:`<span class="badge" style="background:#253A52;color:#8A9BB0">נמוכה</span>`,
+};
+const sb = s => SBADGE[s]||SBADGE.planning;
+const pb = p => PBADGE[p]||PBADGE.medium;
+const AVCOLS = ["#C8102E","#3498DB","#2ECC71","#9B59B6","#F39C12","#1ABC9C","#E74C3C","#E67E22"];
+const av = (name,i) => `<div class="avatar" style="width:36px;height:36px;font-size:13px;background:${AVCOLS[i%AVCOLS.length]}">${name.split(" ").map(w=>w[0]).join("").slice(0,2)}</div>`;
+const allTasks = p => p.workplans.flatMap(w=>w.tasks);
+const prog = p => { const t=allTasks(p); return t.length?Math.round(t.filter(x=>x.status==="done").length/t.length*100):0; };
+const gname = (p,id) => p.team.find(m=>m.id===id)?.name||"—";
+const pbar = (val,color,h=8) => `<div class="pbar" style="height:${h}px"><div class="pbar-fill" style="width:${Math.min(100,Math.max(0,val))}%;background:${color};height:${h}px"></div></div>`;
+
+/* ═══════════════════════════ NAVIGATION ═══════════════════════════ */
+let currentPage = "dashboard";
+function showPage(page, btn){
+  currentPage = page;
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".nav-tab").forEach(b=>b.classList.remove("active"));
+  document.getElementById("page-"+page).classList.add("active");
+  if(btn) btn.classList.add("active");
+  renderPage(page);
+}
+function openProject(id){
+  state.openProjectId = id;
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.querySelectorAll(".nav-tab").forEach(b=>b.classList.remove("active"));
+  document.getElementById("page-project").classList.add("active");
+  renderProject(id,"overview");
+}
+
+/* ═══════════════════════════ MODAL ═══════════════════════════ */
+function openModal(title, html, onOpen){
+  document.getElementById("modal-title").textContent = title;
+  document.getElementById("modal-body").innerHTML = html;
+  document.getElementById("modal-overlay").classList.add("open");
+  if(onOpen) onOpen();
+}
+function closeModal(){ document.getElementById("modal-overlay").classList.remove("open"); }
+
+/* ═══════════════════════════ EXPORT ═══════════════════════════ */
+function dlBlob(content,filename,mime){
+  const b=new Blob(["\uFEFF"+content],{type:mime});
+  const u=URL.createObjectURL(b);
+  const a=document.createElement("a");
+  a.href=u;a.download=filename;a.click();
+  URL.revokeObjectURL(u);
+}
+function exportCSV(pid){
+  const p=state.projects.find(x=>x.id===pid);
+  const e=v=>`"${String(v||"").replace(/"/g,'""')}"`;
+  const rows=[];
+  rows.push("=== תיק פרויקט ===");
+  rows.push([e("שם"),e(p.name)].join(","));
+  rows.push([e("מנהל"),e(p.owner)].join(","));
+  rows.push([e("תקציב"),e(p.budget)].join(","));
+  rows.push([e("הוצאות"),e(p.spent)].join(","));
+  rows.push("");
+  rows.push("=== משימות ===");
+  rows.push([e("תוכנית"),e("משימה"),e("אחראי"),e("התחלה"),e("סיום"),e("סטטוס"),e("התקדמות")].join(","));
+  p.workplans.forEach(wp=>wp.tasks.forEach(t=>rows.push([e(wp.name),e(t.name),e(gname(p,t.assigneeId)),e(t.start),e(t.end),e(t.status),e(t.progress+"%")].join(","))));
+  rows.push(""); rows.push("=== אבני דרך ===");
+  p.milestones.forEach(m=>rows.push([e(m.name),e(m.date),e(m.status)].join(",")));
+  rows.push(""); rows.push("=== צוות ===");
+  p.team.forEach(m=>rows.push([e(m.name),e(m.role),e(m.email),e(m.phone)].join(",")));
+  dlBlob(rows.join("\r\n"),p.name.replace(/\s+/g,"-")+".csv","text/csv;charset=utf-8");
+}
+function exportXML(pid){
+  const p=state.projects.find(x=>x.id===pid);
+  const e=s=>String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const aT=p.workplans.flatMap(wp=>wp.tasks.map(t=>({...t,wpName:wp.name})));
+  const xml=`<?xml version="1.0" encoding="UTF-8"?>\n<Project xmlns="http://schemas.microsoft.com/project">\n  <n>${e(p.name)}</n>\n  <StartDate>${p.startDate}T08:00:00</StartDate>\n  <FinishDate>${p.endDate}T17:00:00</FinishDate>\n  <Tasks>\n    <Task><UID>1</UID><ID>0</ID><n>${e(p.name)}</n></Task>\n    ${aT.map((t,i)=>`<Task><UID>${i+2}</UID><ID>${i+2}</ID><n>${e(t.name)}</n><Start>${t.start}T08:00:00</Start><Finish>${t.end}T17:00:00</Finish><PercentComplete>${t.progress}</PercentComplete></Task>`).join("\n    ")}\n  </Tasks>\n</Project>`;
+  dlBlob(xml,p.name.replace(/\s+/g,"-")+"-gantt.xml","application/xml");
+}
+
+/* ═══════════════════════════ RENDER PAGES ═══════════════════════════ */
+function renderPage(page){
+  if(page==="dashboard") renderDashboard();
+  else if(page==="projects") renderProjectList();
+  else if(page==="mine") renderMine();
+}
+
+/* ─── DASHBOARD ─── */
+function renderDashboard(){
+  const ps=state.projects;
+  const active=ps.filter(p=>p.status==="active").length;
+  const totalB=ps.reduce((s,p)=>s+p.budget,0);
+  const totalSp=ps.reduce((s,p)=>s+p.spent,0);
+  const allT=ps.flatMap(p=>allTasks(p));
+  const pct=allT.length?Math.round(allT.filter(t=>t.status==="done").length/allT.length*100):0;
+  const ovT=allT.filter(t=>isOverdue(t.end,t.status)).length;
+  const ovMs=ps.flatMap(p=>p.milestones).filter(m=>m.status!=="done"&&diffDays(today(),m.date)<0).length;
+  let html=`<h2 class="f18 fw9 mb12">📊 דשבורד</h2>
+  <div class="stats">
+    <div class="stat-card"><div class="stat-val">${ps.length}</div><div class="stat-label">פרויקטים</div></div>
+    <div class="stat-card"><div class="stat-val c-green">${active}</div><div class="stat-label">פעילים</div></div>
+    <div class="stat-card"><div class="stat-val c-gold">₪${(totalB/1e6).toFixed(1)}M</div><div class="stat-label">תקציב</div></div>
+    <div class="stat-card"><div class="stat-val c-green">${pct}%</div><div class="stat-label">משימות ✅</div></div>
+    ${ovT>0?`<div class="stat-card"><div class="stat-val c-danger">${ovT}</div><div class="stat-label">⚠ באיחור</div></div>`:""}
+  </div>`;
+  ps.forEach(p=>{
+    const pr=prog(p);
+    const budPct=p.budget?Math.round(p.spent/p.budget*100):0;
+    const ot=allTasks(p).filter(t=>isOverdue(t.end,t.status)).length;
+    const nextMs=[...p.milestones].filter(m=>m.status!=="done").sort((a,b)=>a.date.localeCompare(b.date))[0];
+    html+=`<div class="card" style="cursor:pointer" onclick="openProject('${p.id}')">
+      <div class="flex sb ac wrap gap8">
+        <div style="flex:1">
+          <div class="f15 fw7 mb8">${esc(p.name)}</div>
+          <div class="flex gap6 wrap ac mb4">${sb(p.status)}${pb(p.priority)}${ot>0?`<span class="badge" style="background:rgba(231,76,60,.15);color:var(--danger)">⚠ ${ot}</span>`:""}</div>
+          ${nextMs?`<div class="f11 c-gold mt4">🏁 ${esc(nextMs.name)} · ${fmt(nextMs.date)}</div>`:""}
+        </div>
+        <div style="min-width:130px">
+          <div class="f11 c-gray mb4">התקדמות: ${pr}%</div>
+          ${pbar(pr,pr===100?"#2ECC71":"#C8102E",8)}
+          <div class="f11 c-gray mt8">תקציב: ${budPct}%</div>
+          ${pbar(budPct,p.spent>p.budget?"#E74C3C":"#E8B84B",5)}
+        </div>
+      </div>
+    </div>`;
+  });
+  document.getElementById("page-dashboard").innerHTML=html;
+}
+
+/* ─── PROJECT LIST ─── */
+function renderProjectList(){
+  let html=`<div class="flex sb ac mb12">
+    <h2 class="f18 fw9">📁 תיק פרויקטים</h2>
+    <button class="btn btn-red" onclick="showAddProject()">+ פרויקט חדש</button>
+  </div>`;
+  state.projects.forEach(p=>{
+    html+=`<div class="card">
+      <div class="flex sb ac wrap gap8">
+        <div style="flex:1;cursor:pointer" onclick="openProject('${p.id}')">
+          <div class="f15 fw7 mb8">${esc(p.name)}</div>
+          <div class="flex gap6 wrap ac">${sb(p.status)}${pb(p.priority)}<span class="f11 c-gray">👤 ${esc(p.owner)}</span>
+          ${p.tags.map(t=>`<span class="badge" style="background:var(--navy);color:var(--gold)">${esc(t)}</span>`).join("")}</div>
+        </div>
+        <div class="flex gap6">
+          <button class="btn btn-sm btn-ghost" onclick="openProject('${p.id}')">פתח</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteProject('${p.id}')">🗑</button>
+        </div>
+      </div>
+    </div>`;
+  });
+  document.getElementById("page-projects").innerHTML=html;
+}
+
+/* ─── MY TASKS ─── */
+function renderMine(){
+  const uid=state.currentUser;
+  const el=document.getElementById("page-mine");
+  if(!uid){ el.innerHTML=`<h2 class="f18 fw9 mb12">👤 המשימות שלי</h2><div class="c-gray" style="text-align:center;padding:50px">בחר את שמך בפינה הימנית העליונה</div>`; return; }
+  const tasks=state.projects.flatMap(p=>p.workplans.flatMap(wp=>wp.tasks.filter(t=>t.assigneeId===uid).map(t=>({...t,projectName:p.name,pid:p.id,wpName:wp.name,wpColor:wp.color}))));
+  tasks.sort((a,b)=>a.end.localeCompare(b.end));
+  let html=`<h2 class="f18 fw9 mb12">👤 המשימות שלי</h2>`;
+  if(!tasks.length){ html+=`<div class="c-gray" style="text-align:center;padding:50px">אין משימות מוקצות לך 🎉</div>`; }
+  tasks.forEach(t=>{
+    const ov=isOverdue(t.end,t.status);
+    html+=`<div class="card" style="border-right:4px solid ${esc(t.wpColor)}">
+      <div class="flex sb wrap gap8">
+        <div style="flex:1">
+          <div class="fw7 f13 mb4" style="color:${ov?"var(--danger)":"var(--white)"}">${ov?"⚠ ":""}${esc(t.name)}</div>
+          <div class="f11 c-gray">📁 ${esc(t.projectName)} · ${esc(t.wpName)}</div>
+          <div class="f11 mt4" style="color:${ov?"var(--danger)":"var(--gray)"}">📅 ${fmt(t.end)}${ov?` · איחור ${Math.abs(diffDays(today(),t.end))}י`:""}</div>
+        </div>
+        <div class="flex col gap6 ac" style="min-width:80px">${sb(t.status)}${pb(t.priority)}<div class="f11 c-gray mt4">${t.progress}%</div></div>
+      </div>
+    </div>`;
+  });
+  el.innerHTML=html;
+}
+
+/* ─── UPDATE OVERDUE BADGE ─── */
+function updateOverdueBadge(){
+  syncBottomNavBadge();
+  const ov=state.projects.flatMap(p=>allTasks(p)).filter(t=>isOverdue(t.end,t.status)).length;
+  const tab=document.getElementById("mine-tab");
+  const existing=tab.querySelector(".badge-dot");
+  if(existing) existing.remove();
+  if(ov>0){ const d=document.createElement("span"); d.className="badge-dot"; d.textContent=ov; tab.appendChild(d); }
+}
+
+/* ─── UPDATE USER SELECTOR ─── */
+function updateUserSelector(){
+  const sel=document.getElementById("user-sel");
+  const seen=new Set();
+  const members=state.projects.flatMap(p=>p.team).filter(m=>{ if(seen.has(m.id))return false; seen.add(m.id); return true; });
+  sel.innerHTML=`<option value="">👤 משתמש</option>`+members.map(m=>`<option value="${m.id}"${m.id===state.currentUser?" selected":""}>${esc(m.name)}</option>`).join("");
+}
+function setCurrentUser(id){ state.currentUser=id; if(currentPage==="mine") renderMine(); }
+
+/* ═══════════════════════════ PROJECT DETAIL ═══════════════════════════ */
+let currentProjectTab="overview";
+function renderProject(pid, tab){
+  currentProjectTab=tab;
+  const p=state.projects.find(x=>x.id===pid);
+  if(!p) return;
+  const pr=prog(p);
+  const ov=allTasks(p).filter(t=>isOverdue(t.end,t.status)).length;
+  const tabs=[{id:"overview",label:"📋 סקירה"},{id:"workplans",label:"📂 תוכניות"},{id:"gantt",label:"📊 גאנט"},{id:"milestones",label:"🏁 אבני דרך"},{id:"team",label:"👥 צוות"},{id:"meetings",label:"💬 פגישות"},{id:"ai",label:"🤖 AI"}];
+  let html=`
+    <button class="btn btn-ghost btn-sm mb12" onclick="showPage('projects',document.querySelectorAll('.nav-tab')[1])">← חזור</button>
+    <div class="flex sb af wrap gap8 mb12">
+      <div style="flex:1">
+        <h2 class="f18 fw9 mb8">${esc(p.name)}</h2>
+        <div class="flex gap6 wrap ac">${sb(p.status)}${pb(p.priority)}<span class="f12 c-gray">👤 ${esc(p.owner)}</span>${ov>0?`<span class="badge" style="background:rgba(231,76,60,.15);color:var(--danger)">⚠ ${ov} איחור</span>`:""}</div>
+      </div>
+      <div class="flex gap6">
+        <button class="btn btn-sm btn-gold" onclick="exportCSV('${p.id}')">⬇ CSV</button>
+        <button class="btn btn-sm btn-blue" onclick="exportXML('${p.id}')">⬇ MSP</button>
+      </div>
+    </div>
+    <div class="flex sb f11 c-gray mb4"><span>התקדמות</span><span class="c-white fw7">${pr}% · ${allTasks(p).filter(t=>t.status==="done").length}/${allTasks(p).length}</span></div>
+    ${pbar(pr,pr===100?"#2ECC71":"#C8102E",8)}
+    <div style="margin-top:16px;margin-bottom:18px;overflow-x:auto;padding-bottom:4px">
+      <div class="proj-tabs" style="min-width:max-content">
+        ${tabs.map(t=>`<button class="proj-tab${t.id===tab?" active":""}" onclick="renderProject('${p.id}','${t.id}')">${t.label}</button>`).join("")}
+      </div>
+    </div>
+    <div id="proj-content"></div>`;
+  document.getElementById("page-project").innerHTML=html;
+  renderProjectTab(p,tab);
+}
+
+function renderProjectTab(p,tab){
+  const el=document.getElementById("proj-content");
+  if(!el) return;
+  if(tab==="overview") el.innerHTML=renderOverview(p);
+  else if(tab==="workplans") el.innerHTML=renderWorkplans(p);
+  else if(tab==="gantt") el.innerHTML=renderGantt(p);
+  else if(tab==="milestones") el.innerHTML=renderMilestones(p);
+  else if(tab==="team") el.innerHTML=renderTeam(p);
+  else if(tab==="meetings") el.innerHTML=renderMeetings(p);
+  else if(tab==="ai") el.innerHTML=renderAITab(p);
+  attachRangeListeners(p);
+}
+
+/* ─── OVERVIEW ─── */
+function renderOverview(p){
+  const pr=prog(p); const dL=diffDays(today(),p.endDate);
+  const ovT=allTasks(p).filter(t=>isOverdue(t.end,t.status));
+  const budPct=p.budget?Math.round(p.spent/p.budget*100):0;
+  let h="";
+  if(ovT.length) h+=`<div class="alert alert-danger mb12"><div class="fw7 mb4">⚠ ${ovT.length} משימות באיחור</div>${ovT.map(t=>`<div class="f11">• ${esc(t.name)} · ${fmt(t.end)}</div>`).join("")}</div>`;
+  h+=`<div class="flex gap8 wrap mb12">
+    <div class="stat-card" style="flex:1;min-width:90px"><div class="fw7 f11 c-gray mb4">מנהל פרויקט</div><div class="fw7">${esc(p.owner)||"—"}</div></div>
+    <div class="stat-card" style="flex:1;min-width:90px"><div class="f11 c-gray mb4">ימים לסיום</div><div class="fw9 f18" style="color:${dL<0?"var(--danger)":dL<14?"var(--warn)":"var(--green)"}">${Math.abs(dL)}<span class="f11 c-gray">${dL<0?" איחור":" ימים"}</span></div></div>
+    <div class="stat-card" style="flex:1;min-width:90px"><div class="f11 c-gray mb4">התקדמות</div><div class="fw9 f18">${pr}<span class="f11 c-gray">%</span></div></div>
+  </div>
+  <div class="card mb8">
+    <div class="f12 fw7 c-gray mb8">תקציב</div>
+    <div class="flex gap16 wrap mb8">
+      <div><div class="f11 c-gray">מאושר</div><div class="fw7 f14">₪${p.budget.toLocaleString()}</div></div>
+      <div><div class="f11 c-gray">בפועל</div><div class="fw7 f14 c-gold">₪${p.spent.toLocaleString()}</div></div>
+      <div><div class="f11 c-gray">נותר</div><div class="fw7 f14" style="color:${p.budget-p.spent<0?"var(--danger)":"var(--green)"}"">₪${(p.budget-p.spent).toLocaleString()}</div></div>
+    </div>
+    ${pbar(budPct,p.spent>p.budget?"#E74C3C":"#E8B84B",10)}
+  </div>
+  ${p.description?`<div class="card mb8"><div class="f12 fw7 c-gray mb4">תיאור</div><div class="f13" style="line-height:1.7">${esc(p.description)}</div></div>`:""}
+  ${p.tags.length?`<div class="card"><div class="f12 fw7 c-gray mb8">תגיות</div><div class="flex gap6 wrap">${p.tags.map(t=>`<span class="badge" style="background:var(--navy);color:var(--gold)">${esc(t)}</span>`).join("")}</div></div>`:""}
+  <div class="mt12 flex gap6">
+    <button class="btn btn-ghost" onclick="showEditProject('${p.id}')">✏ עריכת פרויקט</button>
+  </div>`;
+  return h;
+}
+
+/* ─── WORK PLANS ─── */
+function renderWorkplans(p){
+  let h=`<div class="flex sb ac mb12"><span class="fw7">📂 תוכניות עבודה</span><button class="btn btn-sm btn-red" onclick="showAddWorkplan('${p.id}')">+ תוכנית</button></div>`;
+  p.workplans.forEach(wp=>{
+    const done=wp.tasks.filter(t=>t.status==="done").length;
+    const pr=wp.tasks.length?Math.round(done/wp.tasks.length*100):0;
+    h+=`<div class="card mb8" style="border-right:4px solid ${esc(wp.color)}">
+      <div class="flex sb ac mb10">
+        <div><span class="fw7 f14" style="color:${esc(wp.color)}">■ ${esc(wp.name)}</span><span class="f11 c-gray" style="margin-right:8px">${wp.tasks.length} משימות · ${pr}%</span></div>
+        <div class="flex gap6">
+          <button class="btn btn-sm btn-red" onclick="showAddTask('${p.id}','${wp.id}')">+ משימה</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteWorkplan('${p.id}','${wp.id}')">🗑</button>
+        </div>
+      </div>`;
+    wp.tasks.forEach(t=>{
+      const ov=isOverdue(t.end,t.status);
+      const deps=(t.deps||[]).map(d=>allTasks(p).find(x=>x.id===d)?.name).filter(Boolean);
+      h+=`<div class="card-sm" style="${ov?"border-right:3px solid var(--danger)":""}">
+        <div class="flex sb af wrap gap6">
+          <div style="flex:1">
+            <div class="fw7 f13" style="color:${ov?"var(--danger)":"var(--white)"}">${ov?"⚠ ":""}${esc(t.name)}</div>
+            <div class="f11 c-gray mt4">👤 ${esc(gname(p,t.assigneeId))} · 📅 ${fmt(t.end)}</div>
+            ${deps.length?`<div class="f11 c-gray">↳ תלוי ב: ${deps.map(esc).join(", ")}</div>`:""}
+            ${t.notes?`<div class="f11 c-gray" style="font-style:italic">${esc(t.notes)}</div>`:""}
+          </div>
+          <div class="flex gap4 wrap">${pb(t.priority)}${sb(t.status)}</div>
+        </div>
+        <div class="flex ac gap8 mt8">
+          <div style="flex:1">
+            <div class="flex sb f11 c-gray mb4"><span>התקדמות</span><span>${t.progress}%</span></div>
+            <input type="range" min="0" max="100" value="${t.progress}" data-pid="${p.id}" data-wpid="${wp.id}" data-tid="${t.id}" class="task-range" style="accent-color:${esc(wp.color)}">
+          </div>
+          <div class="flex gap4">
+            <button class="btn btn-sm" style="background:transparent;color:var(--blue);border:1px solid var(--blue);font-size:12px" onclick="showEditTask('${p.id}','${wp.id}','${t.id}')">✏</button>
+            ${t.status!=="done"?`<button class="btn btn-sm btn-green" onclick="completeTask('${p.id}','${wp.id}','${t.id}')">✓</button>`:""}
+            <button class="btn btn-sm btn-danger" onclick="deleteTask('${p.id}','${wp.id}','${t.id}')">🗑</button>
+          </div>
+        </div>
+      </div>`;
+    });
+    h+=`</div>`;
+  });
+  return h;
+}
+
+/* ─── GANTT ─── */
+function renderGantt(p){
+  if(!allTasks(p).length) return `<div class="c-gray" style="text-align:center;padding:40px">הוסף משימות בטאב "תוכניות עבודה"</div>`;
+  const totalDays=Math.max(1,diffDays(p.startDate,p.endDate)+1);
+  const todayOff=diffDays(p.startDate,today());
+  const months=[];
+  let cur=new Date(p.startDate); cur.setDate(1);
+  while(cur<=new Date(p.endDate)){
+    months.push({label:cur.toLocaleDateString("he-IL",{month:"short",year:"2-digit"}),days:new Date(cur.getFullYear(),cur.getMonth()+1,0).getDate()});
+    cur.setMonth(cur.getMonth()+1);
+  }
+  let h=`<h3 class="fw9 mb12">📊 גאנט</h3><div class="gantt-wrap"><div style="min-width:600px">`;
+  h+=`<div class="flex" style="margin-right:160px">${months.map((m,i)=>`<div style="flex:0 0 ${m.days/totalDays*100}%;background:${i%2===0?"var(--mid)":"var(--light)"};padding:4px 3px;font-size:10px;color:var(--gray-l);font-weight:700;text-align:center;border-left:1px solid var(--navy)">${m.label}</div>`).join("")}</div>`;
+  p.workplans.forEach(wp=>{
+    h+=`<div class="gantt-row" style="margin-top:10px"><div class="gantt-label fw7" style="color:${esc(wp.color)}">■ ${esc(wp.name)}</div><div style="flex:1;height:3px;background:${esc(wp.color)};opacity:.25;border-radius:2px"></div></div>`;
+    wp.tasks.forEach(t=>{
+      const ts=Math.max(0,diffDays(p.startDate,t.start));
+      const tl=Math.max(1,diffDays(t.start,t.end)+1);
+      const ov=isOverdue(t.end,t.status);
+      h+=`<div class="gantt-row"><div class="gantt-label f11" style="padding-right:20px;color:${ov?"var(--danger)":"var(--white)"}">${ov?"⚠ ":"↳ "}${esc(t.name)}</div>
+        <div class="gantt-track">
+          ${todayOff>=0&&todayOff<=totalDays?`<div class="gantt-today" style="left:${todayOff/totalDays*100}%"></div>`:""}
+          <div class="gantt-bar" style="left:${ts/totalDays*100}%;width:${tl/totalDays*100}%;background:${ov?"var(--danger)":esc(wp.color)};opacity:${t.status==="done"?.45:.9}" title="${esc(t.name)}: ${fmt(t.start)}–${fmt(t.end)}">
+            <div class="gantt-progress" style="width:${t.progress}%"></div>
+            <span style="position:absolute;right:4px;top:50%;transform:translateY(-50%);font-size:9px;font-weight:700;color:#fff">${t.progress}%</span>
+          </div>
+        </div></div>`;
+    });
+  });
+  h+=`</div></div><div class="flex wrap gap12 mt12 f11">`;
+  p.workplans.forEach(wp=>{ h+=`<span style="color:${esc(wp.color)}">■ ${esc(wp.name)}</span>`; });
+  h+=`<span class="c-danger">⚠ איחור</span><span class="c-red">| היום</span></div>`;
+  return h;
+}
+
+/* ─── MILESTONES ─── */
+function renderMilestones(p){
+  let h=`<div class="flex sb ac mb12"><span class="fw7">🏁 אבני דרך</span><button class="btn btn-sm btn-red" onclick="showAddMilestone('${p.id}')">+ אבן דרך</button></div>`;
+  if(!p.milestones.length) return h+`<div class="c-gray" style="text-align:center;padding:30px">אין אבני דרך</div>`;
+  h+=`<div class="timeline">`;
+  [...p.milestones].sort((a,b)=>a.date.localeCompare(b.date)).forEach(m=>{
+    const d=diffDays(today(),m.date); const ov=m.status!=="done"&&d<0;
+    const dotColor=m.status==="done"?"var(--green)":ov?"var(--danger)":m.status==="active"?"var(--gold)":"var(--light)";
+    const icon=m.status==="done"?"✅":ov?"⚠":"🔲";
+    h+=`<div class="tl-item"><div class="tl-dot" style="background:${dotColor}"></div>
+      <div class="card" style="flex:1;padding:12px 14px;${ov?"border-right:3px solid var(--danger)":""}">
+        <div class="flex sb wrap gap6">
+          <div>
+            <div class="fw7 f13" style="color:${ov?"var(--danger)":"var(--white)"}">${icon} ${esc(m.name)}</div>
+            <div class="f11 mt4" style="color:${ov?"var(--danger)":"var(--gray)"}">📅 ${fmt(m.date)} ${m.status!=="done"?`(${d<0?"איחור "+Math.abs(d)+"י":d===0?"היום":"עוד "+d+"י"})`:""}</div>
+            ${m.description?`<div class="f11 c-gray mt4">${esc(m.description)}</div>`:""}
+          </div>
+          <div class="flex gap4">
+            ${m.status!=="done"?`<button class="btn btn-sm btn-green" onclick="completeMilestone('${p.id}','${m.id}')">✓</button>`:""}
+            <button class="btn btn-sm btn-danger" onclick="deleteMilestone('${p.id}','${m.id}')">🗑</button>
+          </div>
+        </div>
+      </div></div>`;
+  });
+  return h+`</div>`;
+}
+
+/* ─── TEAM ─── */
+function renderTeam(p){
+  let h=`<div class="flex sb ac mb12"><span class="fw7">👥 חברי הצוות</span><button class="btn btn-sm btn-red" onclick="showAddMember('${p.id}')">+ חבר צוות</button></div>`;
+  h+=`<div class="flex wrap gap8">`;
+  p.team.forEach((m,i)=>{
+    const mt=allTasks(p).filter(t=>t.assigneeId===m.id);
+    h+=`<div class="card" style="padding:14px 16px;min-width:175px;flex:1 1 175px;position:relative">
+      <div class="flex ac gap8 mb8">${av(m.name,i)}<div><div class="fw7 f14">${esc(m.name)}</div><div class="f11 c-gold">${esc(m.role)}</div></div></div>
+      ${m.email?`<div class="f11 c-gray mb4">✉ ${esc(m.email)}</div>`:""}
+      ${m.phone?`<div class="f11 c-gray mb8">📱 ${esc(m.phone)}</div>`:""}
+      <div class="f11 c-gray mb10">📋 ${mt.length} משימות · ✅ ${mt.filter(t=>t.status==="done").length}</div>
+      <div class="flex gap6">
+        ${m.phone?`<button class="btn btn-sm btn-wa" onclick="sendWA('${p.id}','${m.id}')" style="flex:1;font-size:11px">💬 WA</button>`:""}
+        ${m.email?`<button class="btn btn-sm btn-blue" onclick="sendEmail('${p.id}','${m.id}')" style="flex:1;font-size:11px">✉ מייל</button>`:""}
+      </div>
+      <button onclick="deleteMember('${p.id}','${m.id}')" style="position:absolute;top:6px;left:6px;background:none;border:none;color:var(--gray);font-size:16px;cursor:pointer">×</button>
+    </div>`;
+  });
+  if(!p.team.length) h+=`<div class="c-gray f13">אין חברי צוות</div>`;
+  h+=`</div>`;
+  return h;
+}
+
+/* ─── MEETINGS ─── */
+function renderMeetings(p){
+  let h=`<div class="flex sb ac mb12"><span class="fw7">💬 סיכומי פגישות</span><button class="btn btn-sm btn-red" onclick="showAddMeeting('${p.id}')">+ פגישה</button></div>`;
+  if(!p.meetings.length) return h+`<div class="c-gray" style="text-align:center;padding:30px">אין פגישות</div>`;
+  [...p.meetings].sort((a,b)=>b.date.localeCompare(a.date)).forEach(m=>{
+    h+=`<div class="card mb8">
+      <div class="flex sb ac" onclick="toggleMeeting('meeting-${m.id}')" style="cursor:pointer">
+        <div><div class="fw7 f14">📋 ${esc(m.title)}</div><div class="f11 c-gray mt4">📅 ${fmt(m.date)} · 👥 ${m.participants.map(esc).join(", ")}</div></div>
+        <div class="flex ac gap8"><span class="c-gold f13" id="meeting-arrow-${m.id}">▼</span><button onclick="event.stopPropagation();deleteMeeting('${p.id}','${m.id}')" style="background:none;border:none;color:var(--danger);font-size:16px;cursor:pointer">🗑</button></div>
+      </div>
+      <div id="meeting-${m.id}" style="display:none" class="sep">
+        <div class="f12 fw7 c-gray mb4">סיכום:</div>
+        <div class="f13" style="line-height:1.7;margin-bottom:10px">${esc(m.summary)}</div>
+        ${m.decisions.length?`<div class="f12 fw7 c-gray mb4">החלטות:</div>${m.decisions.map(d=>`<div class="f12 c-gold mb4">✔ ${esc(d)}</div>`).join("")}`:""}
+        ${m.actions.length?`<div class="f12 fw7 c-gray mt8 mb4">פעולות נדרשות:</div>${m.actions.map(a=>`<div class="card-sm mb4 f12"><span>➤ ${esc(a.text)}</span> <span class="c-gray">| ${esc(a.owner)}</span>${a.due?` <span class="c-gold">| ${fmt(a.due)}</span>`:""}</div>`).join("")}`:""}
+      </div>
+    </div>`;
+  });
+  return h;
+}
+function toggleMeeting(id){
+  const el=document.getElementById(id);
+  const arrow=document.getElementById("meeting-arrow-"+id.split("-")[1]);
+  if(!el)return;
+  const open=el.style.display==="none";
+  el.style.display=open?"block":"none";
+  if(arrow) arrow.textContent=open?"▲":"▼";
+}
+
+/* ─── RANGE LISTENERS ─── */
+function attachRangeListeners(p){
+  document.querySelectorAll(".task-range").forEach(inp=>{
+    inp.addEventListener("input",function(){
+      const {pid,wpid,tid}=this.dataset;
+      const val=+this.value;
+      const proj=state.projects.find(x=>x.id===pid);
+      if(!proj)return;
+      const wp=proj.workplans.find(w=>w.id===wpid);
+      if(!wp)return;
+      const task=wp.tasks.find(t=>t.id===tid);
+      if(!task)return;
+      task.progress=val;
+      if(val===100) task.status="done";
+      else if(task.status==="done") task.status="active";
+      saveState();
+      updateOverdueBadge();
+    });
+  });
+}
+
+/* ═══════════════════════════ ACTIONS ═══════════════════════════ */
+function deleteProject(id){
+  if(!confirm("למחוק פרויקט?"))return;
+  state.projects=state.projects.filter(p=>p.id!==id);
+  saveState(); renderProjectList(); updateUserSelector(); updateOverdueBadge();
+}
+function completeTask(pid,wpid,tid){
+  const p=state.projects.find(x=>x.id===pid);
+  const t=p?.workplans.find(w=>w.id===wpid)?.tasks.find(t=>t.id===tid);
+  if(!t)return;
+  t.status="done"; t.progress=100;
+  saveState(); renderProject(pid,currentProjectTab); updateOverdueBadge();
+}
+function deleteTask(pid,wpid,tid){
+  const p=state.projects.find(x=>x.id===pid);
+  const wp=p?.workplans.find(w=>w.id===wpid);
+  if(!wp)return;
+  wp.tasks=wp.tasks.filter(t=>t.id!==tid);
+  saveState(); renderProject(pid,currentProjectTab);
+}
+function deleteWorkplan(pid,wpid){
+  if(!confirm("למחוק תוכנית עבודה?"))return;
+  const p=state.projects.find(x=>x.id===pid);
+  p.workplans=p.workplans.filter(w=>w.id!==wpid);
+  saveState(); renderProject(pid,currentProjectTab);
+}
+function completeMilestone(pid,mid){
+  const p=state.projects.find(x=>x.id===pid);
+  const m=p?.milestones.find(m=>m.id===mid);
+  if(!m)return;
+  m.status="done"; saveState(); renderProject(pid,currentProjectTab);
+}
+function deleteMilestone(pid,mid){
+  const p=state.projects.find(x=>x.id===pid);
+  p.milestones=p.milestones.filter(m=>m.id!==mid);
+  saveState(); renderProject(pid,currentProjectTab);
+}
+function deleteMember(pid,uid){
+  const p=state.projects.find(x=>x.id===pid);
+  p.team=p.team.filter(m=>m.id!==uid);
+  saveState(); updateUserSelector(); renderProject(pid,currentProjectTab);
+}
+function deleteMeeting(pid,mid){
+  const p=state.projects.find(x=>x.id===pid);
+  p.meetings=p.meetings.filter(m=>m.id!==mid);
+  saveState(); renderProject(pid,currentProjectTab);
+}
+
+/* ═══════════════════════════ MODALS / FORMS ═══════════════════════════ */
+
+/* Add Project */
+function showAddProject(){
+  openModal("פרויקט חדש",`
+    <div class="field"><label>שם פרויקט *</label><input id="np-name" placeholder="שם הפרויקט"/></div>
+    <div class="field"><label>מנהל פרויקט</label><input id="np-owner"/></div>
+    <div class="row2">
+      <div class="field"><label>תחילה</label><input type="date" id="np-start" value="${today()}"/></div>
+      <div class="field"><label>סיום</label><input type="date" id="np-end"/></div>
+    </div>
+    <div class="field"><label>תקציב (₪)</label><input type="number" id="np-budget"/></div>
+    <div class="row2">
+      <div class="field"><label>עדיפות</label><select id="np-priority"><option value="high">גבוהה</option><option value="medium" selected>בינונית</option><option value="low">נמוכה</option></select></div>
+      <div class="field"><label>סטטוס</label><select id="np-status"><option value="planning">תכנון</option><option value="active">פעיל</option></select></div>
+    </div>
+    <div class="field"><label>תיאור</label><textarea id="np-desc"></textarea></div>
+    <div class="field"><label>תגיות (פסיקים)</label><input id="np-tags" placeholder="שיווק, IT, מוצר"/></div>
+    <div class="flex gap8">
+      <button class="btn btn-red" onclick="saveNewProject()">שמור פרויקט</button>
+      <button class="btn btn-ghost" onclick="closeModal()">ביטול</button>
+    </div>`);
+}
+function saveNewProject(){
+  const name=document.getElementById("np-name").value.trim();
+  if(!name){alert("נא להזין שם פרויקט");return;}
+  const p={
+    id:uid(),name,owner:document.getElementById("np-owner").value.trim(),
+    startDate:document.getElementById("np-start").value,
+    endDate:document.getElementById("np-end").value,
+    budget:+document.getElementById("np-budget").value||0,spent:0,
+    priority:document.getElementById("np-priority").value,
+    status:document.getElementById("np-status").value,
+    description:document.getElementById("np-desc").value.trim(),
+    tags:document.getElementById("np-tags").value.split(",").map(t=>t.trim()).filter(Boolean),
+    team:[],milestones:[],workplans:[],meetings:[]
+  };
+  state.projects.push(p); saveState(); closeModal(); renderProjectList(); updateUserSelector();
+}
+
+/* Edit Project */
+function showEditProject(pid){
+  const p=state.projects.find(x=>x.id===pid);
+  if(!p)return;
+  openModal("עריכת פרויקט",`
+    <div class="field"><label>שם פרויקט</label><input id="ep-name" value="${esc(p.name)}"/></div>
+    <div class="field"><label>מנהל פרויקט</label><input id="ep-owner" value="${esc(p.owner||"")}"/></div>
+    <div class="row2">
+      <div class="field"><label>תחילה</label><input type="date" id="ep-start" value="${p.startDate}"/></div>
+      <div class="field"><label>סיום</label><input type="date" id="ep-end" value="${p.endDate}"/></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>תקציב (₪)</label><input type="number" id="ep-budget" value="${p.budget}"/></div>
+      <div class="field"><label>הוצאות (₪)</label><input type="number" id="ep-spent" value="${p.spent}"/></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>סטטוס</label><select id="ep-status"><option value="planning"${p.status==="planning"?" selected":""}>תכנון</option><option value="active"${p.status==="active"?" selected":""}>פעיל</option><option value="paused"${p.status==="paused"?" selected":""}>מושהה</option><option value="done"${p.status==="done"?" selected":""}>הושלם</option></select></div>
+      <div class="field"><label>עדיפות</label><select id="ep-priority"><option value="high"${p.priority==="high"?" selected":""}>גבוהה</option><option value="medium"${p.priority==="medium"?" selected":""}>בינונית</option><option value="low"${p.priority==="low"?" selected":""}>נמוכה</option></select></div>
+    </div>
+    <div class="field"><label>תיאור</label><textarea id="ep-desc">${esc(p.description||"")}</textarea></div>
+    <div class="field"><label>תגיות (פסיקים)</label><input id="ep-tags" value="${esc(p.tags.join(", "))}"/></div>
+    <div class="flex gap8">
+      <button class="btn btn-red" onclick="saveEditProject('${pid}')">שמור</button>
+      <button class="btn btn-ghost" onclick="closeModal()">ביטול</button>
+    </div>`);
+}
+function saveEditProject(pid){
+  const p=state.projects.find(x=>x.id===pid); if(!p)return;
+  p.name=document.getElementById("ep-name").value.trim();
+  p.owner=document.getElementById("ep-owner").value.trim();
+  p.startDate=document.getElementById("ep-start").value;
+  p.endDate=document.getElementById("ep-end").value;
+  p.budget=+document.getElementById("ep-budget").value||0;
+  p.spent=+document.getElementById("ep-spent").value||0;
+  p.status=document.getElementById("ep-status").value;
+  p.priority=document.getElementById("ep-priority").value;
+  p.description=document.getElementById("ep-desc").value.trim();
+  p.tags=document.getElementById("ep-tags").value.split(",").map(t=>t.trim()).filter(Boolean);
+  saveState(); closeModal(); renderProject(pid,currentProjectTab);
+}
+
+/* Add Workplan */
+const WPCOLS=["#3498DB","#9B59B6","#E67E22","#27AE60","#C8102E","#1ABC9C","#F39C12","#E91E63"];
+let selectedWPColor="#3498DB";
+function showAddWorkplan(pid){
+  selectedWPColor="#3498DB";
+  openModal("תוכנית עבודה חדשה",`
+    <div class="field"><label>שם *</label><input id="wp-name" placeholder="מחקר ופיתוח, שיווק..."/></div>
+    <div class="field"><label>צבע</label><div class="flex gap8 wrap">${WPCOLS.map(c=>`<button id="wpc-${c.slice(1)}" onclick="selectWPColor('${c}')" style="width:30px;height:30px;border-radius:50%;background:${c};border:3px solid ${c==="#3498DB"?"white":"transparent"};cursor:pointer"></button>`).join("")}</div></div>
+    <div class="flex gap8 mt12">
+      <button class="btn btn-red" onclick="saveWorkplan('${pid}')">צור תוכנית</button>
+      <button class="btn btn-ghost" onclick="closeModal()">ביטול</button>
+    </div>`);
+}
+function selectWPColor(c){
+  selectedWPColor=c;
+  WPCOLS.forEach(col=>{ const b=document.getElementById("wpc-"+col.slice(1)); if(b) b.style.border=`3px solid ${col===c?"white":"transparent"}`; });
+}
+function saveWorkplan(pid){
+  const name=document.getElementById("wp-name").value.trim();
+  if(!name){alert("נא להזין שם");return;}
+  const p=state.projects.find(x=>x.id===pid); if(!p)return;
+  p.workplans.push({id:uid(),name,color:selectedWPColor,tasks:[]});
+  saveState(); closeModal(); renderProject(pid,currentProjectTab);
+}
+
+/* Add/Edit Task */
+function showAddTask(pid,wpid){
+  const p=state.projects.find(x=>x.id===pid);
+  const allT=allTasks(p);
+  openModal("משימה חדשה",`
+    <div class="field"><label>שם משימה *</label><input id="nt-name"/></div>
+    <div class="field"><label>אחראי</label><select id="nt-assignee"><option value="">— בחר אחראי —</option>${p.team.map(m=>`<option value="${m.id}">${esc(m.name)} (${esc(m.role)})</option>`).join("")}</select></div>
+    <div class="row2">
+      <div class="field"><label>התחלה</label><input type="date" id="nt-start" value="${today()}"/></div>
+      <div class="field"><label>סיום</label><input type="date" id="nt-end"/></div>
+    </div>
+    <div class="field"><label>עדיפות</label><select id="nt-priority"><option value="high">גבוהה</option><option value="medium" selected>בינונית</option><option value="low">נמוכה</option></select></div>
+    ${allT.length?`<div class="field"><label>תלויות</label>${allT.map(t=>`<label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--gray);margin-bottom:4px;cursor:pointer"><input type="checkbox" value="${t.id}" class="dep-check" style="accent-color:var(--red);width:16px;height:16px"> ${esc(t.name)}</label>`).join("")}</div>`:""}
+    <div class="field"><label>הערות</label><textarea id="nt-notes"></textarea></div>
+    <div class="flex gap8">
+      <button class="btn btn-red" onclick="saveNewTask('${pid}','${wpid}')">הוסף משימה</button>
+      <button class="btn btn-ghost" onclick="closeModal()">ביטול</button>
+    </div>`);
+}
+function saveNewTask(pid,wpid){
+  const name=document.getElementById("nt-name").value.trim();
+  if(!name){alert("נא להזין שם");return;}
+  const end=document.getElementById("nt-end").value;
+  if(!end){alert("נא לבחור תאריך סיום");return;}
+  const deps=[...document.querySelectorAll(".dep-check:checked")].map(c=>c.value);
+  const p=state.projects.find(x=>x.id===pid);
+  const wp=p?.workplans.find(w=>w.id===wpid); if(!wp)return;
+  wp.tasks.push({id:uid(),name,assigneeId:document.getElementById("nt-assignee").value,start:document.getElementById("nt-start").value,end,priority:document.getElementById("nt-priority").value,notes:document.getElementById("nt-notes").value.trim(),deps,progress:0,status:"todo"});
+  saveState(); closeModal(); renderProject(pid,currentProjectTab); updateOverdueBadge();
+}
+function showEditTask(pid,wpid,tid){
+  const p=state.projects.find(x=>x.id===pid);
+  const wp=p?.workplans.find(w=>w.id===wpid);
+  const t=wp?.tasks.find(x=>x.id===tid); if(!t)return;
+  const allT=allTasks(p).filter(x=>x.id!==tid);
+  openModal("עריכת משימה",`
+    <div class="field"><label>שם</label><input id="et-name" value="${esc(t.name)}"/></div>
+    <div class="field"><label>אחראי</label><select id="et-assignee"><option value="">— בחר —</option>${p.team.map(m=>`<option value="${m.id}"${m.id===t.assigneeId?" selected":""}>${esc(m.name)}</option>`).join("")}</select></div>
+    <div class="row2">
+      <div class="field"><label>התחלה</label><input type="date" id="et-start" value="${t.start}"/></div>
+      <div class="field"><label>סיום</label><input type="date" id="et-end" value="${t.end}"/></div>
+    </div>
+    <div class="field"><label>עדיפות</label><select id="et-priority"><option value="high"${t.priority==="high"?" selected":""}>גבוהה</option><option value="medium"${t.priority==="medium"?" selected":""}>בינונית</option><option value="low"${t.priority==="low"?" selected":""}>נמוכה</option></select></div>
+    <div class="field"><label>סטטוס</label><select id="et-status"><option value="todo"${t.status==="todo"?" selected":""}>לביצוע</option><option value="active"${t.status==="active"?" selected":""}>פעיל</option><option value="done"${t.status==="done"?" selected":""}>הושלם</option></select></div>
+    <div class="field"><label>התקדמות: <span id="et-prog-val">${t.progress}</span>%</label><input type="range" min="0" max="100" value="${t.progress}" id="et-progress" style="width:100%;accent-color:var(--red)" oninput="document.getElementById('et-prog-val').textContent=this.value"/></div>
+    ${allT.length?`<div class="field"><label>תלויות</label>${allT.map(x=>`<label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--gray);margin-bottom:4px;cursor:pointer"><input type="checkbox" value="${x.id}" class="dep-check"${(t.deps||[]).includes(x.id)?" checked":""} style="accent-color:var(--red);width:16px;height:16px"> ${esc(x.name)}</label>`).join("")}</div>`:""}
+    <div class="field"><label>הערות</label><textarea id="et-notes">${esc(t.notes||"")}</textarea></div>
+    <div class="flex gap8">
+      <button class="btn btn-red" onclick="saveEditTask('${pid}','${wpid}','${tid}')">שמור</button>
+      <button class="btn btn-ghost" onclick="closeModal()">ביטול</button>
+    </div>`);
+}
+function saveEditTask(pid,wpid,tid){
+  const p=state.projects.find(x=>x.id===pid);
+  const wp=p?.workplans.find(w=>w.id===wpid);
+  const t=wp?.tasks.find(x=>x.id===tid); if(!t)return;
+  t.name=document.getElementById("et-name").value.trim();
+  t.assigneeId=document.getElementById("et-assignee").value;
+  t.start=document.getElementById("et-start").value;
+  t.end=document.getElementById("et-end").value;
+  t.priority=document.getElementById("et-priority").value;
+  t.status=document.getElementById("et-status").value;
+  t.progress=+document.getElementById("et-progress").value;
+  t.notes=document.getElementById("et-notes").value.trim();
+  t.deps=[...document.querySelectorAll(".dep-check:checked")].map(c=>c.value);
+  saveState(); closeModal(); renderProject(pid,currentProjectTab); updateOverdueBadge();
+}
+
+/* Add Milestone */
+function showAddMilestone(pid){
+  openModal("אבן דרך חדשה",`
+    <div class="field"><label>שם *</label><input id="ms-name"/></div>
+    <div class="field"><label>תאריך יעד</label><input type="date" id="ms-date" value="${today()}"/></div>
+    <div class="field"><label>סטטוס</label><select id="ms-status"><option value="todo">ממתין</option><option value="active">בתהליך</option><option value="done">הושלם</option></select></div>
+    <div class="field"><label>תיאור</label><textarea id="ms-desc"></textarea></div>
+    <div class="flex gap8">
+      <button class="btn btn-red" onclick="saveMilestone('${pid}')">שמור</button>
+      <button class="btn btn-ghost" onclick="closeModal()">ביטול</button>
+    </div>`);
+}
+function saveMilestone(pid){
+  const name=document.getElementById("ms-name").value.trim();
+  if(!name){alert("נא להזין שם");return;}
+  const p=state.projects.find(x=>x.id===pid); if(!p)return;
+  p.milestones.push({id:uid(),name,date:document.getElementById("ms-date").value,status:document.getElementById("ms-status").value,description:document.getElementById("ms-desc").value.trim()});
+  saveState(); closeModal(); renderProject(pid,currentProjectTab);
+}
+
+/* Add Member */
+function showAddMember(pid){
+  openModal("הוספת חבר צוות",`
+    <div class="field"><label>שם מלא *</label><input id="nm-name"/></div>
+    <div class="field"><label>תפקיד</label><input id="nm-role" placeholder="מנהל, מפתח, מעצב..."/></div>
+    <div class="field"><label>אימייל</label><input type="email" id="nm-email"/></div>
+    <div class="field"><label>טלפון (לWhatsApp)</label><input id="nm-phone" placeholder="050-1234567"/></div>
+    <div class="flex gap8">
+      <button class="btn btn-red" onclick="saveMember('${pid}')">הוסף לצוות</button>
+      <button class="btn btn-ghost" onclick="closeModal()">ביטול</button>
+    </div>`);
+}
+function saveMember(pid){
+  const name=document.getElementById("nm-name").value.trim();
+  if(!name){alert("נא להזין שם");return;}
+  const p=state.projects.find(x=>x.id===pid); if(!p)return;
+  p.team.push({id:uid(),name,role:document.getElementById("nm-role").value.trim(),email:document.getElementById("nm-email").value.trim(),phone:document.getElementById("nm-phone").value.trim()});
+  saveState(); updateUserSelector(); closeModal(); renderProject(pid,currentProjectTab);
+}
+
+/* Add Meeting */
+function showAddMeeting(pid){
+  openModal("סיכום פגישה חדש",`
+    <div class="field"><label>כותרת *</label><input id="mt-title"/></div>
+    <div class="field"><label>תאריך</label><input type="date" id="mt-date" value="${today()}"/></div>
+    <div class="field"><label>משתתפים (פסיקים)</label><input id="mt-participants" placeholder="ניר כהן, דנה לוי"/></div>
+    <div class="field"><label>סיכום</label><textarea id="mt-summary"></textarea></div>
+    <div class="field"><label>החלטות (שורה לכל החלטה)</label><textarea id="mt-decisions"></textarea></div>
+    <div class="field"><label>פעולות (משימה | אחראי | תאריך)</label><textarea id="mt-actions" placeholder="הכנת מצגת | ניר כהן | 2026-04-15"></textarea></div>
+    <div class="flex gap8">
+      <button class="btn btn-red" onclick="saveMeeting('${pid}')">שמור סיכום</button>
+      <button class="btn btn-ghost" onclick="closeModal()">ביטול</button>
+    </div>`);
+}
+function saveMeeting(pid){
+  const title=document.getElementById("mt-title").value.trim();
+  if(!title){alert("נא להזין כותרת");return;}
+  const p=state.projects.find(x=>x.id===pid); if(!p)return;
+  p.meetings.push({id:uid(),title,date:document.getElementById("mt-date").value,participants:document.getElementById("mt-participants").value.split(",").map(s=>s.trim()).filter(Boolean),summary:document.getElementById("mt-summary").value.trim(),decisions:document.getElementById("mt-decisions").value.split("\n").filter(Boolean),actions:document.getElementById("mt-actions").value.split("\n").filter(s=>s.trim()).map(s=>{const[text,owner,due]=s.split("|").map(x=>x.trim());return{text,owner:owner||"",due:due||""}; })});
+  saveState(); closeModal(); renderProject(pid,currentProjectTab);
+}
+
+/* WA / Email */
+function sendWA(pid,mid){
+  const p=state.projects.find(x=>x.id===pid);
+  const m=p?.team.find(x=>x.id===mid); if(!m)return;
+  openModal(`💬 WhatsApp → ${m.name}`,`
+    <div style="background:var(--navy);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px">אל: <strong>${esc(m.name)}</strong> (${esc(m.phone)})</div>
+    <div class="field"><label>הודעה</label><textarea id="wa-body">שלום ${esc(m.name)},\n\nרציתי לעדכן אותך לגבי פרויקט ${esc(p.name)}...\n\nתודה</textarea></div>
+    <div class="flex gap8">
+      <button class="btn btn-wa" onclick="doSendWA('${pid}','${mid}')">💬 שלח WhatsApp</button>
+      <button class="btn btn-ghost" onclick="closeModal()">ביטול</button>
+    </div>
+    <div class="f11 c-gray mt8">* יפתח את אפליקציית WhatsApp</div>`);
+}
+function doSendWA(pid,mid){
+  const p=state.projects.find(x=>x.id===pid);
+  const m=p?.team.find(x=>x.id===mid); if(!m)return;
+  const txt=encodeURIComponent(document.getElementById("wa-body").value);
+  const ph=(m.phone||"").replace(/[-\s]/g,"").replace(/^0/,"972");
+  window.open(`https://wa.me/${ph}?text=${txt}`,"_blank");
+  closeModal();
+}
+function sendEmail(pid,mid){
+  const p=state.projects.find(x=>x.id===pid);
+  const m=p?.team.find(x=>x.id===mid); if(!m)return;
+  openModal(`✉ מייל → ${m.name}`,`
+    <div style="background:var(--navy);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:13px">אל: <strong>${esc(m.name)}</strong> (${esc(m.email)})</div>
+    <div class="field"><label>נושא</label><input id="em-subject" value="עדכון פרויקט: ${esc(p.name)}"/></div>
+    <div class="field"><label>תוכן</label><textarea id="em-body">שלום ${esc(m.name)},\n\nרציתי לעדכן אותך לגבי פרויקט ${esc(p.name)}...\n\nתודה</textarea></div>
+    <div class="flex gap8">
+      <button class="btn btn-red" onclick="doSendEmail('${pid}','${mid}')">✉ פתח אפליקציית מייל</button>
+      <button class="btn btn-ghost" onclick="closeModal()">ביטול</button>
+    </div>
+    <div class="f11 c-gray mt8">* יפתח את אפליקציית המייל שלך</div>`);
+}
+function doSendEmail(pid,mid){
+  const p=state.projects.find(x=>x.id===pid);
+  const m=p?.team.find(x=>x.id===mid); if(!m)return;
+  const sub=encodeURIComponent(document.getElementById("em-subject").value);
+  const body=encodeURIComponent(document.getElementById("em-body").value);
+  window.open(`mailto:${m.email}?subject=${sub}&body=${body}`,"_blank");
+  closeModal();
+}
+
+/* ═══════════════════════════ BOTTOM NAV ═══════════════════════════ */
+function updateBottomNav(page){
+  document.querySelectorAll(".tab-bar-bottom button").forEach(b=>b.classList.remove("active"));
+  const btn=document.getElementById("bn-"+page);
+  if(btn) btn.classList.add("active");
+}
+function syncBottomNavBadge(){
+  const ov=state.projects.flatMap(p=>allTasks(p)).filter(t=>isOverdue(t.end,t.status)).length;
+  const b=document.getElementById("bn-badge");
+  if(!b)return;
+  if(ov>0){b.style.display="flex";b.textContent=ov;}else{b.style.display="none";}
+}
+
+/* ═══════════════════════════ AI TAB ═══════════════════════════ */
+function getApiKey(){ return localStorage.getItem("strauss_api_key")||""; }
+function saveApiKey(k){ localStorage.setItem("strauss_api_key",k); }
+
+function renderAITab(p){
+  const hasKey=!!getApiKey();
+  return `
+  <div style="max-width:700px">
+    <h3 class="fw9 mb4" style="font-size:17px">🤖 עוזר AI לפרויקט</h3>
+    <p class="f12 c-gray mb12">הזן תמלול שיחה או מסמך — ה-AI יסכם, יחלץ משימות ויעדכן את הפרויקט אוטומטית</p>
+
+    <!-- API KEY -->
+    <div class="api-key-box mb12">
+      <div class="flex sb ac mb8">
+        <span class="f12 fw7 c-gold">🔑 Anthropic API Key</span>
+        <span class="f11" style="color:${hasKey?"var(--green)":"var(--danger)"}">
+          ${hasKey?"✓ מחובר":"⚠ נדרש"}
+        </span>
+      </div>
+      <div class="flex gap8">
+        <input type="password" id="ai-apikey" placeholder="sk-ant-api03-..." value="${getApiKey()}"
+          style="flex:1;background:var(--mid);border:1px solid var(--light);border-radius:8px;padding:9px 12px;color:var(--white);font-size:13px;outline:none;direction:ltr"/>
+        <button class="btn btn-gold btn-sm" onclick="saveApiKeyUI()">שמור</button>
+      </div>
+      <div class="f11 c-gray mt4">המפתח נשמר על המכשיר שלך בלבד ולא עובר לשום שרת</div>
+    </div>
+
+    <!-- MODE SELECTOR -->
+    <div class="flex gap8 mb12" id="ai-modes">
+      <button class="btn btn-sm" id="mode-btn-transcript" style="background:var(--red);color:#fff;flex:1" onclick="switchAIMode('transcript')">
+        🎙 תמלול שיחה
+      </button>
+      <button class="btn btn-sm btn-ghost" id="mode-btn-doc" style="flex:1" onclick="switchAIMode('doc')">
+        📄 מסמך / PDF
+      </button>
+      <button class="btn btn-sm btn-ghost" id="mode-btn-free" style="flex:1" onclick="switchAIMode('free')">
+        💬 שאלה חופשית
+      </button>
+    </div>
+
+    <!-- TRANSCRIPT MODE -->
+    <div id="ai-mode-transcript">
+      <div class="ai-section">
+        <div class="f12 fw7 c-gray mb8">הדבק תמלול שיחה / פגישה</div>
+        <textarea id="ai-transcript" style="width:100%;background:var(--navy);border:1px solid var(--light);border-radius:8px;padding:10px 12px;color:var(--white);font-size:13px;min-height:160px;resize:vertical;outline:none;direction:rtl;font-family:inherit" placeholder="הדבק כאן את תמלול השיחה או הפגישה...&#10;&#10;לדוגמה:&#10;ניר: אנחנו צריכים לסיים את עיצוב האריזה עד סוף אפריל...&#10;דנה: אני אטפל בזה, אצטרך עזרה של מיה..."></textarea>
+        <div class="flex gap8 mt8 wrap">
+          <button class="btn btn-red" onclick="runAI('${p.id}','transcript')">
+            ✨ סכם ונתח
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('ai-transcript').value=''">נקה</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DOC MODE -->
+    <div id="ai-mode-doc" style="display:none">
+      <div class="ai-section">
+        <div class="f12 fw7 c-gray mb8">העלה מסמך או תמונה</div>
+        <div class="file-drop" id="ai-file-drop" onclick="document.getElementById('ai-file-input').click()" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleFileDrop(event,'${p.id}')">
+          <input type="file" id="ai-file-input" accept=".pdf,.txt,.png,.jpg,.jpeg,.gif,.webp" onchange="handleFileSelect(event,'${p.id}')"/>
+          <div style="font-size:32px;margin-bottom:8px">📎</div>
+          <div class="fw7 mb4">גרור קובץ לכאן או לחץ לבחירה</div>
+          <div class="f11 c-gray">PDF, TXT, תמונה (PNG/JPG)</div>
+        </div>
+        <div id="ai-file-info" style="display:none" class="mt8 f12 c-gold"></div>
+        <div class="field mt8">
+          <label style="font-size:12px;color:var(--gray);font-weight:700">הוראה נוספת (אופציונלי)</label>
+          <input id="ai-doc-instruction" placeholder="לדוגמה: חלץ את כל המשימות וההחלטות" style="width:100%;background:var(--navy);border:1px solid var(--light);border-radius:8px;padding:9px 12px;color:var(--white);font-size:13px;outline:none;direction:rtl"/>
+        </div>
+        <button class="btn btn-red mt4" id="ai-doc-btn" onclick="runAI('${p.id}','doc')" style="display:none">
+          ✨ נתח מסמך
+        </button>
+      </div>
+    </div>
+
+    <!-- FREE MODE -->
+    <div id="ai-mode-free" style="display:none">
+      <div class="ai-section">
+        <div class="f12 fw7 c-gray mb8">שאל שאלה חופשית על הפרויקט</div>
+        <textarea id="ai-free-q" style="width:100%;background:var(--navy);border:1px solid var(--light);border-radius:8px;padding:10px 12px;color:var(--white);font-size:13px;min-height:100px;resize:vertical;outline:none;direction:rtl;font-family:inherit" placeholder="לדוגמה: מה הסיכונים העיקריים בפרויקט? מה צריך לעשות השבוע? האם הפרויקט בסיכון?"></textarea>
+        <button class="btn btn-red mt8" onclick="runAI('${p.id}','free')">שאל את ה-AI</button>
+      </div>
+    </div>
+
+    <!-- LOADING -->
+    <div id="ai-loading" style="display:none;text-align:center;padding:30px">
+      <div class="spinner" style="width:32px;height:32px;border-width:3px"></div>
+      <div class="f13 c-gray mt8">ה-AI מנתח...</div>
+    </div>
+
+    <!-- RESULTS -->
+    <div id="ai-results"></div>
+  </div>`;
+}
+
+function saveApiKeyUI(){
+  const k=document.getElementById("ai-apikey").value.trim();
+  if(!k){alert("נא להזין API Key");return;}
+  saveApiKey(k);
+  renderProject(state.openProjectId,"ai");
+}
+
+function switchAIMode(mode){
+  ["transcript","doc","free"].forEach(m=>{
+    document.getElementById("ai-mode-"+m).style.display=m===mode?"block":"none";
+    const btn=document.getElementById("mode-btn-"+m);
+    if(btn){btn.style.background=m===mode?"var(--red)":"transparent";btn.style.color=m===mode?"#fff":"var(--gray)";}
+  });
+}
+
+let aiFileData=null;
+let aiFileType=null;
+
+function handleFileSelect(e,pid){
+  const file=e.target.files[0];
+  if(file) processAIFile(file,pid);
+}
+function handleFileDrop(e,pid){
+  e.preventDefault();
+  document.getElementById("ai-file-drop").classList.remove("drag");
+  const file=e.dataTransfer.files[0];
+  if(file) processAIFile(file,pid);
+}
+function processAIFile(file,pid){
+  const info=document.getElementById("ai-file-info");
+  const btn=document.getElementById("ai-doc-btn");
+  info.style.display="block";
+  info.textContent="⏳ טוען קובץ...";
+  const reader=new FileReader();
+  if(file.type==="application/pdf"||file.type.startsWith("image/")){
+    reader.onload=function(e){
+      const base64=e.target.result.split(",")[1];
+      aiFileData=base64;
+      aiFileType=file.type;
+      info.textContent=`✓ ${file.name} (${(file.size/1024).toFixed(0)}KB)`;
+      if(btn) btn.style.display="inline-block";
+    };
+    reader.readAsDataURL(file);
+  } else {
+    reader.onload=function(e){
+      aiFileData=e.target.result;
+      aiFileType="text";
+      info.textContent=`✓ ${file.name} (${(file.size/1024).toFixed(0)}KB)`;
+      if(btn) btn.style.display="inline-block";
+    };
+    reader.readAsText(file);
+  }
+}
+
+async function runAI(pid,mode){
+  const apiKey=getApiKey();
+  if(!apiKey){alert("נא להזין Anthropic API Key בתחילת הדף");return;}
+  const p=state.projects.find(x=>x.id===pid);
+  if(!p)return;
+
+  // Build project context
+  const allT=allTasks(p);
+  const ctx=`פרויקט: ${p.name}
+מנהל: ${p.owner}
+תאריכים: ${p.startDate} עד ${p.endDate}
+סטטוס: ${p.status} | עדיפות: ${p.priority}
+תקציב: ₪${p.budget.toLocaleString()} | הוצאות: ₪${p.spent.toLocaleString()}
+צוות: ${p.team.map(m=>`${m.name} (${m.role})`).join(", ")||"אין"}
+משימות קיימות: ${allT.map(t=>`${t.name} [${t.status}, ${t.progress}%]`).join(", ")||"אין"}
+אבני דרך: ${p.milestones.map(m=>`${m.name} [${m.date}, ${m.status}]`).join(", ")||"אין"}`;
+
+  let messages=[];
+  let systemPrompt=`אתה עוזר ניהול פרויקטים מקצועי לחברת שטראוס. 
+ענה תמיד בעברית.
+הקשר הפרויקט: ${ctx}
+
+חלץ מידע בפורמט JSON בלבד, ללא טקסט נוסף, בפורמט זה:
+{
+  "summary": "סיכום קצר בעברית",
+  "tasks": [{"name":"שם משימה","assignee":"שם אחראי מהצוות או ריק","due":"YYYY-MM-DD או ריק","priority":"high/medium/low","notes":"הערה קצרה"}],
+  "milestones": [{"name":"שם אבן דרך","date":"YYYY-MM-DD","description":"תיאור"}],
+  "risks": ["סיכון 1","סיכון 2"],
+  "decisions": ["החלטה 1","החלטה 2"],
+  "meeting_title": "כותרת לסיכום פגישה אם רלוונטי"
+}`;
+
+  if(mode==="transcript"){
+    const transcript=document.getElementById("ai-transcript").value.trim();
+    if(!transcript){alert("נא להזין תמלול");return;}
+    messages=[{role:"user",content:`נתח את תמלול הפגישה הבא וחלץ מידע רלוונטי:\n\n${transcript}`}];
+  } else if(mode==="doc"){
+    if(!aiFileData){alert("נא לבחור קובץ");return;}
+    const instruction=document.getElementById("ai-doc-instruction").value.trim()||"נתח את המסמך וחלץ מידע רלוונטי לפרויקט";
+    if(aiFileType==="text"){
+      messages=[{role:"user",content:`${instruction}:\n\n${aiFileData}`}];
+    } else {
+      const mtype=aiFileType==="application/pdf"?"document":"image";
+      messages=[{role:"user",content:[
+        {type:mtype==="document"?"document":"image",
+         source:{type:"base64",media_type:aiFileType,data:aiFileData}},
+        {type:"text",text:instruction}
+      ]}];
+    }
+  } else if(mode==="free"){
+    const q=document.getElementById("ai-free-q").value.trim();
+    if(!q){alert("נא להזין שאלה");return;}
+    systemPrompt=`אתה עוזר ניהול פרויקטים לחברת שטראוס. ענה בעברית בצורה ברורה ומועילה.
+הקשר הפרויקט: ${ctx}`;
+    messages=[{role:"user",content:q}];
+  }
+
+  // Show loading
+  document.getElementById("ai-loading").style.display="block";
+  document.getElementById("ai-results").innerHTML="";
+
+  try {
+    const resp=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+      body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2000,system:systemPrompt,messages})
+    });
+    const data=await resp.json();
+    if(data.error){throw new Error(data.error.message);}
+    const text=data.content[0].text;
+    document.getElementById("ai-loading").style.display="none";
+
+    if(mode==="free"){
+      document.getElementById("ai-results").innerHTML=`
+        <div class="ai-result">
+          <div class="f12 fw7 c-gold mb8">💬 תשובת ה-AI</div>
+          <div class="f13" style="line-height:1.8;white-space:pre-wrap">${esc(text)}</div>
+        </div>`;
+      return;
+    }
+
+    // Parse JSON
+    let result;
+    try{ result=JSON.parse(text.replace(/```json|```/g,"").trim()); }
+    catch{ result={summary:text,tasks:[],milestones:[],risks:[],decisions:[],meeting_title:""}; }
+
+    renderAIResults(pid,result,mode);
+
+  } catch(err){
+    document.getElementById("ai-loading").style.display="none";
+    document.getElementById("ai-results").innerHTML=`<div class="alert alert-danger">שגיאה: ${esc(err.message)}</div>`;
+  }
+}
+
+function renderAIResults(pid,result,mode){
+  const p=state.projects.find(x=>x.id===pid);
+  let h=`<div class="ai-result">`;
+
+  // Summary
+  if(result.summary){
+    h+=`<div class="mb12">
+      <div class="f12 fw7 c-gold mb6">📝 סיכום</div>
+      <div class="f13" style="line-height:1.7">${esc(result.summary)}</div>
+    </div>`;
+  }
+
+  // Risks
+  if(result.risks?.length){
+    h+=`<div class="mb12">
+      <div class="f12 fw7 c-gold mb6">⚠️ סיכונים שזוהו</div>
+      ${result.risks.map(r=>`<div class="f12 c-warn mb4">• ${esc(r)}</div>`).join("")}
+    </div>`;
+  }
+
+  // Decisions
+  if(result.decisions?.length){
+    h+=`<div class="mb12">
+      <div class="f12 fw7 c-gold mb6">✅ החלטות</div>
+      ${result.decisions.map(d=>`<div class="f12 c-gray mb4">✔ ${esc(d)}</div>`).join("")}
+    </div>`;
+  }
+
+  // Tasks
+  if(result.tasks?.length){
+    h+=`<div class="mb12">
+      <div class="f12 fw7 c-gold mb8">📋 משימות שזוהו (${result.tasks.length})</div>`;
+    result.tasks.forEach((t,i)=>{
+      const member=p.team.find(m=>m.name===t.assignee||m.name.includes(t.assignee)||t.assignee?.includes(m.name));
+      h+=`<div class="ai-task-item">
+        <div style="flex:1">
+          <div class="fw7 f13 mb4">${esc(t.name)}</div>
+          <div class="f11 c-gray">
+            ${t.assignee?`👤 ${esc(t.assignee)} `:""}
+            ${t.due?`📅 ${fmt(t.due)} `:""}
+            ${t.priority?`<span class="ai-chip" style="background:${t.priority==="high"?"var(--red-dark)":t.priority==="medium"?"#2A2010":"var(--light)"};color:${t.priority==="high"?"var(--red-light)":"var(--gold)"}">${t.priority==="high"?"גבוהה":t.priority==="medium"?"בינונית":"נמוכה"}</span>`:""}
+          </div>
+          ${t.notes?`<div class="f11 c-gray mt4" style="font-style:italic">${esc(t.notes)}</div>`:""}
+        </div>
+        <button class="btn btn-sm btn-green" onclick="addAITask('${pid}',${i})">+ הוסף</button>
+      </div>`;
+    });
+    h+=`<button class="btn btn-red mt8" onclick="addAllAITasks('${pid}')">✚ הוסף את כל המשימות</button>`;
+    h+=`</div>`;
+  }
+
+  // Milestones
+  if(result.milestones?.length){
+    h+=`<div class="mb12">
+      <div class="f12 fw7 c-gold mb8">🏁 אבני דרך שזוהו</div>
+      ${result.milestones.map((m,i)=>`
+        <div class="ai-task-item">
+          <div style="flex:1"><div class="fw7 f13">${esc(m.name)}</div><div class="f11 c-gray">📅 ${fmt(m.date)}</div></div>
+          <button class="btn btn-sm btn-green" onclick="addAIMilestone('${pid}',${i})">+ הוסף</button>
+        </div>`).join("")}
+    </div>`;
+  }
+
+  // Add as meeting summary
+  if(mode==="transcript"&&result.summary){
+    h+=`<div class="sep">
+      <button class="btn btn-gold" onclick="addAIMeeting('${pid}')">💬 שמור כסיכום פגישה</button>
+    </div>`;
+  }
+
+  h+=`</div>`;
+  document.getElementById("ai-results").innerHTML=h;
+
+  // Store result for later use
+  window._aiLastResult={pid,result};
+}
+
+function addAITask(pid,idx){
+  const p=state.projects.find(x=>x.id===pid);
+  const result=window._aiLastResult?.result;
+  if(!p||!result)return;
+  const t=result.tasks[idx];
+
+  // Find or create default workplan
+  let wp=p.workplans[0];
+  if(!wp){
+    wp={id:uid(),name:"משימות AI",color:"#3498DB",tasks:[]};
+    p.workplans.push(wp);
+  }
+  const member=p.team.find(m=>m.name===t.assignee||m.name.includes(t.assignee||"")||(t.assignee||"").includes(m.name));
+  wp.tasks.push({id:uid(),name:t.name,assigneeId:member?.id||"",start:today(),end:t.due||"",priority:t.priority||"medium",notes:t.notes||"",deps:[],progress:0,status:"todo"});
+  saveState();
+  // Visual feedback
+  const btns=document.querySelectorAll(".ai-task-item button");
+  if(btns[idx]){btns[idx].textContent="✓ נוסף";btns[idx].style.background="var(--green)";btns[idx].style.color="#fff";}
+}
+
+function addAllAITasks(pid){
+  const result=window._aiLastResult?.result;
+  if(!result)return;
+  result.tasks.forEach((_,i)=>addAITask(pid,i));
+  const allBtns=document.querySelectorAll(".ai-task-item .btn-green");
+  allBtns.forEach(b=>{b.textContent="✓ נוסף";b.style.background="var(--green)";b.style.color="#fff";});
+  saveState();
+  renderProject(pid,currentProjectTab);
+}
+
+function addAIMilestone(pid,idx){
+  const p=state.projects.find(x=>x.id===pid);
+  const result=window._aiLastResult?.result;
+  if(!p||!result)return;
+  const m=result.milestones[idx];
+  p.milestones.push({id:uid(),name:m.name,date:m.date||today(),status:"todo",description:m.description||""});
+  saveState();
+  const btns=document.querySelectorAll(".ai-task-item:nth-child("+(idx+1)+") button");
+  if(btns.length) btns[0].textContent="✓ נוסף";
+}
+
+function addAIMeeting(pid){
+  const p=state.projects.find(x=>x.id===pid);
+  const result=window._aiLastResult?.result;
+  if(!p||!result)return;
+  p.meetings.push({id:uid(),title:result.meeting_title||"סיכום פגישה (AI)",date:today(),participants:p.team.map(m=>m.name),summary:result.summary||"",decisions:result.decisions||[],actions:(result.tasks||[]).slice(0,3).map(t=>({text:t.name,owner:t.assignee||"",due:t.due||""}))});
+  saveState();
+  alert("✓ הסיכום נוסף לטאב הפגישות");
+}
+
+/* ═══════════════════════════ INIT ═══════════════════════════ */
+loadState();
+updateUserSelector();
+renderDashboard();
+updateOverdueBadge();
+syncBottomNavBadge();
+
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+</script>
+</body>
+</html>
