@@ -208,6 +208,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;heigh
 /* ═══════════════════════════ STATE ═══════════════════════════ */
 const SK = "strauss_pm_v5";
 let state = { projects:[], currentUser:"", openProjectId:null };
+let db = null;
+let saveTimer = null;
 
 const uid = () => Math.random().toString(36).slice(2,9);
 const today = () => new Date().toISOString().split("T")[0];
@@ -216,13 +218,87 @@ const diffDays = (a,b) => Math.round((new Date(b)-new Date(a))/86400000);
 const isOverdue = (end,status) => status!=="done" && diffDays(today(),end)<0;
 const esc = s => String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 
-function saveState(){ try{localStorage.setItem(SK,JSON.stringify(state.projects));}catch{} }
-function loadState(){
+// ── Firebase config ──
+const FB_CONFIG = {
+  apiKey: "AIzaSyDuqRZQGUlQb-x4bfRgTk_rX5n21Ok-Y-E",
+  authDomain: "strauss-pm.firebaseapp.com",
+  projectId: "strauss-pm",
+  storageBucket: "strauss-pm.firebasestorage.app",
+  messagingSenderId: "37994605121",
+  appId: "1:37994605121:web:86382706521eb1103eb4c0"
+};
+
+// ── Save: Firebase first, localStorage as backup ──
+function saveState(){
+  // Always save locally as backup
+  try{ localStorage.setItem(SK, JSON.stringify(state.projects)); }catch{}
+  // Debounce Firebase saves (300ms)
+  if(saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=>saveToFirebase(), 300);
+  // Show sync indicator
+  showSyncStatus("saving");
+}
+
+async function saveToFirebase(){
+  if(!db) return;
+  try{
+    const {doc, setDoc} = window.firestore;
+    await setDoc(doc(db,"strauss_pm","projects"),{data: JSON.stringify(state.projects), updated: Date.now()});
+    showSyncStatus("saved");
+  }catch(e){
+    console.warn("Firebase save failed:", e);
+    showSyncStatus("offline");
+  }
+}
+
+async function loadState(){
+  // First load from localStorage for instant display
   try{
     const d=localStorage.getItem(SK);
-    if(d) state.projects=JSON.parse(d);
-    else state.projects=JSON.parse(JSON.stringify(SEED));
+    if(d){ state.projects=JSON.parse(d); }
+    else{ state.projects=JSON.parse(JSON.stringify(SEED)); }
   }catch{ state.projects=JSON.parse(JSON.stringify(SEED)); }
+
+  // Then try Firebase for latest data
+  if(db){
+    try{
+      showSyncStatus("loading");
+      const {doc, getDoc} = window.firestore;
+      const snap = await getDoc(doc(db,"strauss_pm","projects"));
+      if(snap.exists()){
+        const cloudData = JSON.parse(snap.data().data);
+        // Use cloud data if it's newer (has more projects or different data)
+        state.projects = cloudData;
+        localStorage.setItem(SK, JSON.stringify(state.projects));
+        showSyncStatus("synced");
+      } else {
+        // First time - save seed to Firebase
+        await saveToFirebase();
+        showSyncStatus("synced");
+      }
+      // Re-render with cloud data
+      updateUserSelector();
+      renderPage(currentPage);
+      updateOverdueBadge();
+      syncBottomNavBadge();
+    }catch(e){
+      console.warn("Firebase load failed, using local data:", e);
+      showSyncStatus("offline");
+    }
+  }
+}
+
+function showSyncStatus(status){
+  const el = document.querySelector(".save-indicator");
+  if(!el) return;
+  const map = {
+    saving:  "☁️ שומר...",
+    saved:   "✅ מסונכרן",
+    synced:  "✅ מסונכרן",
+    loading: "☁️ טוען...",
+    offline: "📴 מצב לא מקוון",
+  };
+  el.textContent = map[status] || "💾 שמור אוטומטי";
 }
 
 /* ═══════════════════════════ SEED ═══════════════════════════ */
@@ -1458,11 +1534,27 @@ function addAIMeeting(pid){
 }
 
 /* ═══════════════════════════ INIT ═══════════════════════════ */
-loadState();
-updateUserSelector();
-renderDashboard();
-updateOverdueBadge();
-syncBottomNavBadge();
+async function initApp(){
+  // Init Firebase
+  try{
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js");
+    const firestoreModule = await import("https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js");
+    window.firestore = firestoreModule;
+    const app = initializeApp(FB_CONFIG);
+    db = firestoreModule.getFirestore(app);
+    console.log("Firebase connected ✓");
+  }catch(e){
+    console.warn("Firebase init failed:", e);
+    db = null;
+  }
+  // Load data (local first, then cloud)
+  await loadState();
+  updateUserSelector();
+  renderDashboard();
+  updateOverdueBadge();
+  syncBottomNavBadge();
+}
+initApp();
 
 if("serviceWorker" in navigator){
   window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
